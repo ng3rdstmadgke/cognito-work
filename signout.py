@@ -1,4 +1,3 @@
-from getpass import getpass
 import boto3
 from env import env
 
