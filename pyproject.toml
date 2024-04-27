@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "cognito-work"
+version = "0.1.0"
+description = ""
+authors = ["ng3rdstmadgke <ng3rdstmadgke@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+boto3 = "^1.34.93"
+pydantic = "^2.7.1"
+pydantic-settings = "^2.2.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
