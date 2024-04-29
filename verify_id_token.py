@@ -1,4 +1,5 @@
-# 参考 https://yomon.hatenablog.com/entry/2020/07/pyjwt_validate
+# - Amazon CognitoのIDトークンのJWTをPyJWTを使って検証する | YOMON8.NET
+#   https://yomon.hatenablog.com/entry/2020/07/pyjwt_validate
 import requests
 import json
 import jwt
