@@ -39,6 +39,12 @@ print(f"PUBLIC KEY: {public_key}")
 
 # PyJWTでid_tokenの検証とdecode
 # jwt.decode: https://pyjwt.readthedocs.io/en/stable/api.html#jwt.decode
+# options の verify_signature が Trueの場合、デフォルトで以下のオプションが有効になる
+# - verify_exp=True トークンの有効期限を検証する (デフォルト値)
+# - verify_nbf=True トークンが有効になる日時を検証する (デフォルト値)
+# - verify_iat=True トークンの発行時刻を検証する (デフォルト値)
+# - verify_aud=True トークンが発行された対象者(クライアントID) を検証する (デフォルト値)
+# - verify_iss=True トークンの発行者 を検証する (デフォルト値)
 json_payload = jwt.decode(
     id_token,
     public_key,  # 公開鍵
@@ -46,12 +52,6 @@ json_payload = jwt.decode(
     options={
         "verify_signature": True,  # 署名を検証する (デフォルト値)
         "require": ["exp", "iat", "aud", "iss"],  # 必須のクレーム。このクレームがない場合は例外を発生させる
-        # 以下はクレームが存在する場合に検証を行うかどうか
-        "verify_exp": True,  # トークンの有効期限を検証する (デフォルト値)
-        "verify_nbf": True,  # トークンが有効になる日時を検証する (デフォルト値)
-        "verify_iat": True,  # トークンの発行時刻を検証する (デフォルト値)
-        "verify_aud": True,  # トークンが発行された対象者(クライアントID) を検証する (デフォルト値)
-        "verify_iss": True,  # トークンの発行者 を検証する (デフォルト値)
     },
     audience=env.cognito_client_id,
     issuer=cognito_url,
