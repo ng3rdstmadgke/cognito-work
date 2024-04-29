@@ -21,7 +21,7 @@ response = cognito_idp_client.initiate_auth(
 )
 
 # NOTE: admin_create_userで作成したユーザーは初回ログイン時にパスワード変更が必要
-if response["ChallengeName"] == "NEW_PASSWORD_REQUIRED":
+if "ChallengeName" in response and response["ChallengeName"] == "NEW_PASSWORD_REQUIRED":
     print("NEW_PASSWORD_REQUIRED")
     new_password = getpass("NEW PASSWORD: ")
     # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cognito-idp/client/respond_to_auth_challenge.html

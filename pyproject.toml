@@ -10,6 +10,8 @@ python = "^3.10"
 boto3 = "^1.34.93"
 pydantic = "^2.7.1"
 pydantic-settings = "^2.2.1"
+pyjwt = {extras = ["crypto"], version = "^2.8.0"}
+requests = "^2.31.0"
 
 
 [build-system]
