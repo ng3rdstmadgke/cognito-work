@@ -9,9 +9,7 @@ from env import env
 id_token = input("ID TOKEN: ")
 print()
 
-cognito_url = (
-    f"https://cognito-idp.{env.aws_region}.amazonaws.com/{env.cognito_user_pool_id}"
-)
+cognito_url = f"https://cognito-idp.{env.aws_region}.amazonaws.com/{env.cognito_user_pool_id}"
 cognito_jwk_url = f"{cognito_url}/.well-known/jwks.json"
 print(f"COGNITO JWK URL: {cognito_jwk_url}")
 

@@ -4,40 +4,136 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Top - Auth API & Hosted UI</title>
+  <script src="/static/common.js"></script>
+
 </head>
 <body>
-  <div style="margin-bottom: 50px">
-    <button id="login_btn" >ログイン</button>
+  <div style="padding: 50px 0; display: flex;">
+    <!-- ログインボタン-->
+    <div style="margin-left: 20px;">
+      <button id="signin_btn">Sign In</button>
+    </div>
+    <!-- トークンの失効 -->
+    <div style="margin-left: 20px;">
+      <button id="revoke_token_btn">Revoke Token</button>
+    </div>
+    <!-- トークンの失効 -->
+    <div style="margin-left: 20px;">
+      <button id="signout_btn">Sign Out</button>
+    </div>
   </div>
+
+  <!-- トークン表示領域 -->
+  <div id="result">
+    <div style="margin-bottom: 1rem;">
+      <table id="token_response" border="1">
+        <caption>トークンエンドポイントのレスポンス</caption>
+        <tr>
+          <th>Key</th>
+          <th>Value</th>
+        </tr>
+      </table>
+    </div>
+
+    <div style="margin-bottom: 1rem;">
+      <table id="idinfo" border="1">
+        <caption>IDトークンのペイロード</caption>
+        <tr>
+          <th>Key</th>
+          <th>Value</th>
+        </tr>
+      </table>
+    </div>
 <script>
-  document.getElementById("login_btn").addEventListener("click", function() {
-    let state = "abcdefghij1234567890"
-    let nonce = "0987654321zyxwvutsrqponml"
+  /**
+   * ログイン
+   */
+  document.getElementById("signin_btn").addEventListener("click", function() {
+    let state = CommonUtils.getRandomString(32)
+    let nonce = CommonUtils.getRandomString(32)
     localStorage.setItem("state", state)
     localStorage.setItem("nonce", nonce)
   
-    // 認可エンドポイント
+    // 認可エンドポイント | AWS
     // https://docs.aws.amazon.com/ja_jp/cognito/latest/developerguide/authorization-endpoint.html
     let url = "https://wng8bngabmwb.auth.ap-northeast-1.amazoncognito.com/oauth2/authorize"
     let query = {
       "response_type": "code",
       "client_id": "{{ client_id }}",
-      "scope": "openid email profile",
+      "scope": "openid email profile aws.cognito.signin.user.admin",  // NOTE:  aws.cognito.signin.user.admin は GlobalSignOut に必要
       "redirect_uri": "http://localhost:8000/code",
       "state": state,
       "nonce": nonce,
     }
     let query_str = Object.entries(query).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join("&")
-    console.log("url: ", `${url}?${query_str}`)
-    location.href = `${url}?${query_str}`
+    let auth_url = `${url}?${query_str}`
+    console.log("Authorization Endpoint URL: ", auth_url)
+    location.href = auth_url
   })
-  
-document.addEventListener("DOMContentLoaded", async function() {
-  const idinfo = localStorage.getItem("idinfo")
-  const token_response = localStorage.getItem("token_response")
-  console.log("idinfo:", idinfo)
-  console.log("token_response:", token_response)
-})
+
+  /**
+   * トークンの取り消し
+   */
+  document.getElementById("revoke_token_btn").addEventListener("click", async function() {
+    let token_response = JSON.parse(localStorage.getItem("token_response"))
+    let res = await fetch("/api/revoke", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          "refresh_token": token_response.refresh_token,
+        })
+      })
+
+    if (!res.ok) {
+      alert(`${res.status} ${res.statusText}: revoke failed. ${data.detail}`);
+      throw new Error(`${res.status} ${res.statusText}: revoke failed. ${data.detail}`);
+    }
+
+    let data = await res.json()
+    console.log("data: ", data)
+
+    localStorage.removeItem("idinfo")
+    localStorage.removeItem("token_response")
+    location.reload()
+  })
+
+  /**
+   * ログアウト
+   */
+  document.getElementById("signout_btn").addEventListener("click", async function() {
+    let token_response = JSON.parse(localStorage.getItem("token_response"))
+    let res = await fetch("/api/signout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          "access_token": token_response.access_token,
+        })
+      })
+
+    if (!res.ok) {
+      alert(`${res.status} ${res.statusText}: revoke failed. ${data.detail}`);
+      throw new Error(`${res.status} ${res.statusText}: revoke failed. ${data.detail}`);
+    }
+
+    let data = await res.json()
+    console.log("data: ", data)
+
+    localStorage.removeItem("idinfo")
+    localStorage.removeItem("token_response")
+    location.reload()
+  })
+
+  /**
+   * トークンの表示
+   */
+  document.addEventListener("DOMContentLoaded", async function() {
+    CommonUtils.displayIdToken(["token_response", "idinfo"])
+  })
 </script>
+<style>
+  table td {
+    word-break:break-all
+  }
+  </style>
 </body>
 </html>
