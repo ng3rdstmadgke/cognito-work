@@ -1,5 +1,6 @@
 import json
 import base64
+import hashlib
 import jwt
 from jwt.algorithms import RSAAlgorithm
 from fastapi import FastAPI, Request, HTTPException
@@ -18,13 +19,30 @@ app = FastAPI()
 # 静的ファイル
 app.mount("/static", StaticFiles(directory=f"static/", html=True), name="front")
 
+def get_code_challenge(code_verifier: str) -> str:
+    """code_challengeを生成する"""
+    # NOTE: code_challengeは、code_verifierをSHA256でハッシュ化し、BASE64URLエンコードしたもの
+    #       code_challenge = BASE64URL-ENCODE(SHA256(ASCII(code_verifier)))
+    #       https://tex2e.github.io/rfc-translater/html/rfc7636.html#4-2--Client-Creates-the-Code-Challenge
+    # 参考: https://qiita.com/gaichi/items/de83f9edd6b43ac6f15b
+    return base64 \
+        .urlsafe_b64encode(
+            hashlib.sha256(code_verifier.encode()).digest()
+        ).rstrip(
+            b'='
+        ).decode()
+
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
+    code_verifier = "dBjftJeZ4CVPmB92K27uhbUJU1p1rwW1gFWFOEjXk"  # NOTE: 本来はランダム文字列
+    code_challenge = get_code_challenge(code_verifier)
+
     return templates.TemplateResponse(
         request=request,
         name="index.html",
         context={
             "client_id": env.cognito_client_id,
+            "code_challenge": code_challenge,
         }
     )
 
@@ -60,6 +78,7 @@ def token(
             "client_secret": env.cognito_client_secret,
             "redirect_uri": "http://localhost:8000/code",
             "grant_type": "authorization_code",
+            "code_verifier": "dBjftJeZ4CVPmB92K27uhbUJU1p1rwW1gFWFOEjXk"
         }
     )
     if res.status_code != 200:
