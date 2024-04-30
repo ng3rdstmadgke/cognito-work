@@ -3,6 +3,7 @@ import boto3
 from env import env
 
 username = input("USERNAME: ")
+password = getpass("PASSWORD: ")
 
 cognito_idp_client = boto3.client("cognito-idp", region_name=env.aws_region)
 
@@ -10,7 +11,7 @@ cognito_idp_client = boto3.client("cognito-idp", region_name=env.aws_region)
 response = cognito_idp_client.admin_create_user(
     UserPoolId=env.cognito_user_pool_id,
     Username=username,
-    TemporaryPassword="H0geh0ge+",
+    TemporaryPassword=password,
     DesiredDeliveryMediums=[ 'EMAIL' ],  # ウェルカムメッセージの送信先
 )
 
