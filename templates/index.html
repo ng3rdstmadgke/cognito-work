@@ -60,7 +60,7 @@
   
     // 認可エンドポイント | AWS
     // https://docs.aws.amazon.com/cognito/latest/developerguide/authorization-endpoint.html
-    let url = "https://wng8bngabmwb.auth.ap-northeast-1.amazoncognito.com/oauth2/authorize"
+    let url = "{{ cognito_domain }}/oauth2/authorize"
     let query = {
       "response_type": "code",
       "client_id": "{{ client_id }}",
@@ -147,7 +147,7 @@
 
       // UserInfoエンドポイント | AWS
       // https://docs.aws.amazon.com/cognito/latest/developerguide/userinfo-endpoint.html
-      let url = "https://wng8bngabmwb.auth.ap-northeast-1.amazoncognito.com/oauth2/userInfo"
+      let url = "{{ cognito_domain }}/oauth2/userInfo"
       let res = await fetch(url, {
           method: "GET",
           headers: {

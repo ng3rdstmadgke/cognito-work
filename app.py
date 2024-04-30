@@ -43,6 +43,7 @@ async def index(request: Request):
         context={
             "client_id": env.cognito_client_id,
             "code_challenge": code_challenge,
+            "cognito_domain": env.cognito_domain,
         }
     )
 
@@ -66,7 +67,7 @@ def token(
     """認可コードをアクセストークンに交換する"""
     # トークンエンドポイント | AWS
     # https://docs.aws.amazon.com/cognito/latest/developerguide/token-endpoint.html
-    url = "https://wng8bngabmwb.auth.ap-northeast-1.amazoncognito.com/oauth2/token"
+    url = f"{env.cognito_domain}/oauth2/token"
     res = requests.post(
         url=url,
         headers={
@@ -161,7 +162,7 @@ def revoke(
     #   - revokeエンドポイントはリフレッシュトークンとそれに関連するアクセストークン・IDトークンを執行させることができます。
     #   - boto3でやる場合はこちら
     #     https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cognito-idp/client/revoke_token.html
-    url = "https://wng8bngabmwb.auth.ap-northeast-1.amazoncognito.com/oauth2/revoke"
+    url = f"{env.cognito_domain}/oauth2/revoke"
     basic_auth = f"{env.cognito_client_id}:{env.cognito_client_secret}"
     res = requests.post(
         url=url,

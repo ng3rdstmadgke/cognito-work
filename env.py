@@ -10,6 +10,7 @@ class Environment(BaseSettings):
     cognito_user_pool_id: str
     cognito_client_id: str
     cognito_client_secret: str
+    cognito_domain: str
     aws_region: str = "ap-northeast-1"
 
     def get_secret_hash(self, username: str) -> str:
