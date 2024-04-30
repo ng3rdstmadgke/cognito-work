@@ -9,7 +9,7 @@
 </head>
 <body>
   <div style="padding: 50px 0; display: flex;">
-    <!-- ログインボタン-->
+    <!-- ログイン -->
     <div style="margin-left: 20px;">
       <button id="signin_btn">Sign In</button>
     </div>
@@ -17,9 +17,13 @@
     <div style="margin-left: 20px;">
       <button id="revoke_token_btn">Revoke Token</button>
     </div>
-    <!-- トークンの失効 -->
+    <!-- ログアウト -->
     <div style="margin-left: 20px;">
       <button id="signout_btn">Sign Out</button>
+    </div>
+    <!-- ユーザー情報 -->
+    <div style="margin-left: 20px;">
+      <button id="user_info_btn">User Info</button>
     </div>
   </div>
 
@@ -55,12 +59,12 @@
     localStorage.setItem("nonce", nonce)
   
     // 認可エンドポイント | AWS
-    // https://docs.aws.amazon.com/ja_jp/cognito/latest/developerguide/authorization-endpoint.html
+    // https://docs.aws.amazon.com/cognito/latest/developerguide/authorization-endpoint.html
     let url = "https://wng8bngabmwb.auth.ap-northeast-1.amazoncognito.com/oauth2/authorize"
     let query = {
       "response_type": "code",
       "client_id": "{{ client_id }}",
-      "scope": "openid email profile aws.cognito.signin.user.admin",  // NOTE:  aws.cognito.signin.user.admin は GlobalSignOut に必要
+      "scope": "openid email profile aws.cognito.signin.user.admin",  // NOTE: aws.cognito.signin.user.admin は GlobalSignOut に必要
       "redirect_uri": "http://localhost:8000/code",
       "state": state,
       "nonce": nonce,
@@ -75,52 +79,92 @@
    * トークンの取り消し
    */
   document.getElementById("revoke_token_btn").addEventListener("click", async function() {
-    let token_response = JSON.parse(localStorage.getItem("token_response"))
-    let res = await fetch("/api/revoke", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          "refresh_token": token_response.refresh_token,
+    if (!confirm("本当にトークンを失効させますか？")) return
+
+    try {
+      let token_response = JSON.parse(localStorage.getItem("token_response"))
+      let res = await fetch("/api/revoke", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            "refresh_token": token_response.refresh_token,
+          })
         })
-      })
 
-    if (!res.ok) {
-      alert(`${res.status} ${res.statusText}: revoke failed. ${data.detail}`);
-      throw new Error(`${res.status} ${res.statusText}: revoke failed. ${data.detail}`);
+      if (!res.ok) {
+        let msg =`${res.status} ${res.statusText}: revoke failed. ${data.detail}`
+        alert(msg);
+        throw new Error(msg);
+      }
+
+      localStorage.removeItem("idinfo")
+      localStorage.removeItem("token_response")
+      location.reload()
+    } catch (err) {
+      console.error(e)
+      alert(`${err}`)
     }
-
-    let data = await res.json()
-    console.log("data: ", data)
-
-    localStorage.removeItem("idinfo")
-    localStorage.removeItem("token_response")
-    location.reload()
   })
 
   /**
    * ログアウト
    */
   document.getElementById("signout_btn").addEventListener("click", async function() {
-    let token_response = JSON.parse(localStorage.getItem("token_response"))
-    let res = await fetch("/api/signout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          "access_token": token_response.access_token,
+    if (!confirm("本当にサインアウトしますか？")) return
+
+    try {
+      let token_response = JSON.parse(localStorage.getItem("token_response"))
+      let res = await fetch("/api/signout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            "access_token": token_response.access_token,
+          })
         })
-      })
 
-    if (!res.ok) {
-      alert(`${res.status} ${res.statusText}: revoke failed. ${data.detail}`);
-      throw new Error(`${res.status} ${res.statusText}: revoke failed. ${data.detail}`);
+      if (!res.ok) {
+        let msg = `${res.status} ${res.statusText}: revoke failed. ${data.detail}`
+        throw new Error(msg);
+      }
+
+      localStorage.removeItem("idinfo")
+      localStorage.removeItem("token_response")
+      location.reload()
+    } catch (err) {
+      console.error(e)
+      alert(`${err}`)
     }
+  })
 
-    let data = await res.json()
-    console.log("data: ", data)
+  /**
+   * ユーザー情報
+   */
+  document.getElementById("user_info_btn").addEventListener("click", async function() {
+    try {
+      let token_response = JSON.parse(localStorage.getItem("token_response"))
 
-    localStorage.removeItem("idinfo")
-    localStorage.removeItem("token_response")
-    location.reload()
+      // UserInfoエンドポイント | AWS
+      // https://docs.aws.amazon.com/cognito/latest/developerguide/userinfo-endpoint.html
+      let url = "https://wng8bngabmwb.auth.ap-northeast-1.amazoncognito.com/oauth2/userInfo"
+      let res = await fetch(url, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token_response.access_token}`,
+            "Content-Type": "application/x-amz-json-1.1",
+          }
+        })
+
+      if (!res.ok) {
+        let msg = `${res.status} ${res.statusText}: failed to fetch userInfo. ${data.detail}`;
+        throw new Error(msg);
+      }
+
+      let userinfo = await res.json()
+      alert(JSON.stringify(userinfo, null, 2))
+    } catch (err) {
+      console.error(e)
+      alert(`${err}`)
+    }
   })
 
   /**

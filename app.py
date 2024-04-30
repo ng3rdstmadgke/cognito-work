@@ -14,6 +14,7 @@ from env import env
 templates = Jinja2Templates(directory="templates")
 
 app = FastAPI()
+
 # 静的ファイル
 app.mount("/static", StaticFiles(directory=f"static/", html=True), name="front")
 
@@ -46,7 +47,7 @@ def token(
 ):
     """認可コードをアクセストークンに交換する"""
     # トークンエンドポイント | AWS
-    # https://docs.aws.amazon.com/ja_jp/cognito/latest/developerguide/token-endpoint.html
+    # https://docs.aws.amazon.com/cognito/latest/developerguide/token-endpoint.html
     url = "https://wng8bngabmwb.auth.ap-northeast-1.amazoncognito.com/oauth2/token"
     res = requests.post(
         url=url,
