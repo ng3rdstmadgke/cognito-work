@@ -44,9 +44,9 @@
       localStorage.setItem("token_response", JSON.stringify(data.token_response))
 
       location.href = "/"
-    } catch (err) {
-      console.error(err)
-      alert(`${err}`)
+    } catch (e) {
+      console.error(e)
+      alert(`${e}`)
     }
   });
 </script>

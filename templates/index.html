@@ -102,9 +102,9 @@
       localStorage.removeItem("idinfo")
       localStorage.removeItem("token_response")
       location.reload()
-    } catch (err) {
+    } catch (e) {
       console.error(e)
-      alert(`${err}`)
+      alert(`${e}`)
     }
   })
 
@@ -132,9 +132,9 @@
       localStorage.removeItem("idinfo")
       localStorage.removeItem("token_response")
       location.reload()
-    } catch (err) {
+    } catch (e) {
       console.error(e)
-      alert(`${err}`)
+      alert(`${e}`)
     }
   })
 
@@ -163,9 +163,9 @@
 
       let userinfo = await res.json()
       alert(JSON.stringify(userinfo, null, 2))
-    } catch (err) {
+    } catch (e) {
       console.error(e)
-      alert(`${err}`)
+      alert(`${e}`)
     }
   })
 
